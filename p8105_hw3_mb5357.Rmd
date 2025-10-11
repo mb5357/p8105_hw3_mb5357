@@ -169,6 +169,23 @@ combined_df <- left_join(zori_df, zipcodes_df, by = "zip_code") %>%
 ```
 
 
+**ZIP Codes Observation**
 
+```{r}
+
+zip_counts <- combined_df |>
+  count(zip_code, name = "n_obs")
+
+zip_counts |>
+  summarize(
+    full_coverage = sum(n_obs == 116),
+    very_sparse = sum(n_obs < 10)
+  )
+
+```
+
+Out of all ZIP codes, 149 are observed in all 116 months between Jan 2015 and Aug 2024.
+Zero ZIP codes have fewer than 10 observations.
+ZIPs with full coverage likely represent stable residential areas. Others may be missing data due to low activity, data gaps, or newer ZIP codes.
 
 

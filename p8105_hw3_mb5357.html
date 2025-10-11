@@ -603,6 +603,23 @@ zori_df &lt;- read_csv(&quot;Zip_zori_uc_sfrcondomfr_sm_month_NYC.csv&quot;,
 combined_df &lt;- left_join(zori_df, zipcodes_df, by = &quot;zip_code&quot;) %&gt;%
   mutate(county = coalesce(county.x, county.y)) %&gt;%
   select(zip_code, county, region_name, date, zori)</code></pre>
+<p><strong>ZIP Codes Observation</strong></p>
+<pre class="r"><code>zip_counts &lt;- combined_df |&gt;
+  count(zip_code, name = &quot;n_obs&quot;)
+
+zip_counts |&gt;
+  summarize(
+    full_coverage = sum(n_obs == 116),
+    very_sparse = sum(n_obs &lt; 10)
+  )</code></pre>
+<pre><code>## # A tibble: 1 × 2
+##   full_coverage very_sparse
+##           &lt;int&gt;       &lt;int&gt;
+## 1           149           0</code></pre>
+<p>Out of all ZIP codes, 149 are observed in all 116 months between Jan
+2015 and Aug 2024. Zero ZIP codes have fewer than 10 observations. ZIPs
+with full coverage likely represent stable residential areas. Others may
+be missing data due to low activity, data gaps, or newer ZIP codes.</p>
 </div>
 
 
