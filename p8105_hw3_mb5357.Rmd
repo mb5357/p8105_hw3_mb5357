@@ -234,16 +234,17 @@ From 2015 to 2024, average rental prices steadily increased across all boroughs 
 
 library(ggplot2)
 
-combined_df |>
+borough_year_avg <- combined_df |>
   group_by(year, 
            borough) |>
- 
-   summarize(avg_rent = mean(zori, na.rm = TRUE), 
-            .groups = "drop") |>
-  
-  ggplot(aes(x = year, 
-             y = avg_rent, 
-             color = borough)) +
+  summarize(avg_rent = mean(zori, na.rm = TRUE), 
+            .groups = "drop")
+
+    
+plot_1 <- ggplot(borough_year_avg,
+                 aes(x = year, 
+                     y = avg_rent, 
+                     color = borough)) +
   
   geom_line(linewidth = 1.2) +
   geom_point() +
@@ -266,18 +267,16 @@ combined_df |>
 
 avg_rent_2023 <- combined_df |>
   filter(year == 2023) |>
-  
   group_by(borough, 
            zip_code, 
            month) |>
- 
-   summarize(avg_rent = mean(zori, na.rm = TRUE), 
+  summarize(avg_rent = mean(zori, na.rm = TRUE), 
             .groups = "drop")
 
-ggplot(avg_rent_2023, 
-       aes(x = borough, 
-           y = avg_rent, 
-           fill = borough)) +
+plot_2 <- ggplot(avg_rent_2023, 
+          aes(x = borough, 
+              y = avg_rent, 
+              fill = borough)) +
   
   geom_boxplot(alpha = 0.7) +   
   geom_jitter(width = 0.2, 
@@ -294,6 +293,19 @@ ggplot(avg_rent_2023,
   theme_minimal() +
   theme(legend.position = "none")
 
+
+```
+
+
+**Combined Plots**
+
+```{r}
+
+library(patchwork)
+
+combined_plot <- plot_1 / plot_2 
+
+ggsave("results/combined_plot.png", combined_plot, width = 10, height = 8)
 
 ```
 
