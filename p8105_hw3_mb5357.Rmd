@@ -34,8 +34,10 @@ For example, user 112108 placed their 4th order on day 4 of the week at 10 AM. T
 instacart |> 
   count(
     aisle, sort = TRUE) |>
+  
   mutate(
     total_aisles = n()) |>
+  
   relocate(
     total_aisles, .before = aisle)
 
@@ -51,10 +53,13 @@ instacart |>
 instacart |>
   count(
     aisle, sort = TRUE) |>
+  
   filter(
     n > 10000) |>
+  
   mutate(
     aisle = reorder(aisle, n)) |>
+  
   ggplot(aes(x = n, y = aisle)) +
   geom_col(fill = "steelblue") +
   labs(
@@ -75,10 +80,12 @@ top_items_table <- instacart |>
   filter(aisle == "baking ingredients" | 
          aisle == "dog food care" | 
          aisle == "packaged vegetables fruits") |>
+  
   count(
     aisle, 
     product_name, 
     name = "orders") |> 
+  
   group_by(aisle) |> 
   slice_max(orders, n = 3) |> 
   ungroup()
@@ -98,13 +105,17 @@ day_names <- c("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
 mean_hour_table <- instacart |>
   filter(product_name == "Pink Lady Apples" | 
          product_name == "Coffee Ice Cream") |>
-    mutate(day_name = factor(day_names[order_dow + 1], 
+   
+   mutate(day_name = factor(day_names[order_dow + 1], 
                              levels = day_names)) |>
-    group_by(product_name, 
+   
+   group_by(product_name, 
            day_name) |>
-    summarize(mean_order_hour = round(mean(order_hour_of_day), 1), 
+    
+  summarize(mean_order_hour = round(mean(order_hour_of_day), 1), 
               .groups = "drop") |>
-    pivot_wider(
+   
+   pivot_wider(
     names_from = day_name,
     values_from = mean_order_hour
     )
@@ -123,6 +134,7 @@ mean_hour_table |>
 
 zipcodes_df <- read_csv("Zip Codes.csv", show_col_types = FALSE) |>
   janitor::clean_names() |>
+   
   mutate(
      county = case_when(
       county == "New York" ~ "Manhattan",
@@ -131,23 +143,27 @@ zipcodes_df <- read_csv("Zip Codes.csv", show_col_types = FALSE) |>
       TRUE ~ county
     )
   ) |>
-  distinct(zip_code, .keep_all = TRUE) |>
+ 
+   distinct(zip_code, .keep_all = TRUE) |>
   select(county, zip_code)
 
 
 zori_df <- read_csv("Zip_zori_uc_sfrcondomfr_sm_month_NYC.csv", 
                     show_col_types = FALSE) |>
   janitor::clean_names()|>
+  
   pivot_longer(
     cols = starts_with("x20"), 
     names_to = "date", 
     values_to = "zori"
   ) |>
-  mutate(
+ 
+   mutate(
     date = lubridate::ymd(str_remove(date, "x")),
     year = year(date),
     month = month(date)
   ) |>
+  
   select(region_name, year, month, zori)
 
 
@@ -157,8 +173,11 @@ combined_df <- left_join(zori_df, zipcodes_df,
   
 combined_df <- combined_df |>
     filter(!is.na(zori)) |>
-    rename(zip_code = region_name,
-         borough = county)
+    
+  rename(zip_code = region_name,
+         borough = county) |> 
+ 
+   mutate(month = month.name[month])
 
 ```
 
@@ -190,10 +209,13 @@ A total of 48 ZIP codes have complete data, appearing in all 116 months from Jan
 borough_year_table <- combined_df |>
   group_by(borough,
            year) |>
-  summarize(avg_rent = mean(zori, na.rm = TRUE), 
+ 
+   summarize(avg_rent = mean(zori, na.rm = TRUE), 
             .groups = "drop") |>
-  arrange(borough, year) |>
-  pivot_wider(
+ 
+   arrange(borough, year) |>
+ 
+   pivot_wider(
     names_from = borough,
     values_from = avg_rent
   )
@@ -215,12 +237,15 @@ library(ggplot2)
 combined_df |>
   group_by(year, 
            borough) |>
-  summarize(avg_rent = mean(zori, na.rm = TRUE), 
+ 
+   summarize(avg_rent = mean(zori, na.rm = TRUE), 
             .groups = "drop") |>
+  
   ggplot(aes(x = year, 
              y = avg_rent, 
              color = borough)) +
-  geom_line(size = 1.2) +
+  
+  geom_line(linewidth = 1.2) +
   geom_point() +
   scale_x_continuous(breaks = seq(2015, 2024, 1)) +
   labs(
@@ -231,6 +256,43 @@ combined_df |>
   ) +
   theme_minimal() +
   theme(legend.position = "bottom")
+
+
+```
+
+
+
+```{r,  fig.width=10, fig.height=8}
+
+avg_rent_2023 <- combined_df |>
+  filter(year == 2023) |>
+  
+  group_by(borough, 
+           zip_code, 
+           month) |>
+ 
+   summarize(avg_rent = mean(zori, na.rm = TRUE), 
+            .groups = "drop")
+
+ggplot(avg_rent_2023, 
+       aes(x = borough, 
+           y = avg_rent, 
+           fill = borough)) +
+  
+  geom_boxplot(alpha = 0.7) +   
+  geom_jitter(width = 0.2, 
+              alpha = 0.3, 
+              size = 1) + 
+  
+  scale_y_continuous() +
+  labs(
+    title = "Distribution of Average Monthly Rental Prices by Borough in 2023",
+    x = "Borough",
+    y = "Average Rental Price ($)",
+    fill = "Borough"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "none")
 
 
 ```
