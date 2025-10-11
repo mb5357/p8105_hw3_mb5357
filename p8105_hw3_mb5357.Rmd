@@ -124,18 +124,15 @@ mean_hour_table |>
 zipcodes_df <- read_csv("Zip Codes.csv", show_col_types = FALSE) |>
   janitor::clean_names() |>
   mutate(
-    zip_code = str_pad(as.character(zip_code), 
-                       width = 5, 
-                       side = "left", 
-                       pad = "0"),
-    county = case_when(
+     county = case_when(
       county == "New York" ~ "Manhattan",
       county == "Kings"    ~ "Brooklyn",
       county == "Richmond" ~ "Staten Island",
       TRUE ~ county
     )
   ) |>
-  distinct(zip_code, .keep_all = TRUE)
+  distinct(zip_code, .keep_all = TRUE) |>
+  select(county, zip_code)
 
 
 zori_df <- read_csv("Zip_zori_uc_sfrcondomfr_sm_month_NYC.csv", 
@@ -146,25 +143,20 @@ zori_df <- read_csv("Zip_zori_uc_sfrcondomfr_sm_month_NYC.csv",
     names_to = "date", 
     values_to = "zori"
   ) |>
-  rename(zip_code = region_id, 
-         region_name = region_name, 
-         county = county_name) |>
   mutate(
-    zip_code = str_pad(as.character(zip_code), 
-                       width = 5, 
-                       side = "left", 
-                       pad = "0"),
-    date = ymd(str_remove(date, "x")),
-    zori = as.numeric(gsub(",", "", zori)),   
+    date = lubridate::ymd(str_remove(date, "x")),
     year = year(date),
     month = month(date)
   ) |>
-  select(zip_code, region_name, county, date, year, month, zori)
+  select(region_name, year, month, zori)
 
 
-combined_df <- left_join(zori_df, zipcodes_df, by = "zip_code") %>%
-  mutate(county = coalesce(county.x, county.y)) %>%
-  select(zip_code, county, region_name, date, zori)
+
+combined_df <- left_join(zori_df, zipcodes_df, 
+                         by = c("region_name" = "zip_code"))
+  
+combined_df <- combined_df |>
+  rename(zip_code = region_name)
 
 ```
 
@@ -188,4 +180,11 @@ Out of all ZIP codes, 149 are observed in all 116 months between Jan 2015 and Au
 Zero ZIP codes have fewer than 10 observations.
 ZIPs with full coverage likely represent stable residential areas. Others may be missing data due to low activity, data gaps, or newer ZIP codes.
 
+
+**Average rental price per borough and year**
+
+```{r}
+
+
+```
 

@@ -562,18 +562,15 @@ mean_hour_table |&gt;
 <pre class="r"><code>zipcodes_df &lt;- read_csv(&quot;Zip Codes.csv&quot;, show_col_types = FALSE) |&gt;
   janitor::clean_names() |&gt;
   mutate(
-    zip_code = str_pad(as.character(zip_code), 
-                       width = 5, 
-                       side = &quot;left&quot;, 
-                       pad = &quot;0&quot;),
-    county = case_when(
+     county = case_when(
       county == &quot;New York&quot; ~ &quot;Manhattan&quot;,
       county == &quot;Kings&quot;    ~ &quot;Brooklyn&quot;,
       county == &quot;Richmond&quot; ~ &quot;Staten Island&quot;,
       TRUE ~ county
     )
   ) |&gt;
-  distinct(zip_code, .keep_all = TRUE)
+  distinct(zip_code, .keep_all = TRUE) |&gt;
+  select(county, zip_code)
 
 
 zori_df &lt;- read_csv(&quot;Zip_zori_uc_sfrcondomfr_sm_month_NYC.csv&quot;, 
@@ -584,25 +581,20 @@ zori_df &lt;- read_csv(&quot;Zip_zori_uc_sfrcondomfr_sm_month_NYC.csv&quot;,
     names_to = &quot;date&quot;, 
     values_to = &quot;zori&quot;
   ) |&gt;
-  rename(zip_code = region_id, 
-         region_name = region_name, 
-         county = county_name) |&gt;
   mutate(
-    zip_code = str_pad(as.character(zip_code), 
-                       width = 5, 
-                       side = &quot;left&quot;, 
-                       pad = &quot;0&quot;),
-    date = ymd(str_remove(date, &quot;x&quot;)),
-    zori = as.numeric(gsub(&quot;,&quot;, &quot;&quot;, zori)),   
+    date = lubridate::ymd(str_remove(date, &quot;x&quot;)),
     year = year(date),
     month = month(date)
   ) |&gt;
-  select(zip_code, region_name, county, date, year, month, zori)
+  select(region_name, year, month, zori)
 
 
-combined_df &lt;- left_join(zori_df, zipcodes_df, by = &quot;zip_code&quot;) %&gt;%
-  mutate(county = coalesce(county.x, county.y)) %&gt;%
-  select(zip_code, county, region_name, date, zori)</code></pre>
+
+combined_df &lt;- left_join(zori_df, zipcodes_df, 
+                         by = c(&quot;region_name&quot; = &quot;zip_code&quot;))
+  
+combined_df &lt;- combined_df |&gt;
+  rename(zip_code = region_name)</code></pre>
 <p><strong>ZIP Codes Observation</strong></p>
 <pre class="r"><code>zip_counts &lt;- combined_df |&gt;
   count(zip_code, name = &quot;n_obs&quot;)
@@ -620,6 +612,7 @@ zip_counts |&gt;
 2015 and Aug 2024. Zero ZIP codes have fewer than 10 observations. ZIPs
 with full coverage likely represent stable residential areas. Others may
 be missing data due to low activity, data gaps, or newer ZIP codes.</p>
+<p><strong>Average rental price per borough and year</strong></p>
 </div>
 
 
