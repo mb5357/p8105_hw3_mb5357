@@ -32,9 +32,12 @@ For example, user 112108 placed their 4th order on day 4 of the week at 10 AM. T
 ```{r}
 
 instacart |> 
-  count(aisle, sort = TRUE) |>
-  mutate(total_aisles = n()) |>
-  relocate(total_aisles, .before = aisle)
+  count(
+    aisle, sort = TRUE) |>
+  mutate(
+    total_aisles = n()) |>
+  relocate(
+    total_aisles, .before = aisle)
 
 ```
 
@@ -46,9 +49,12 @@ instacart |>
 ```{r,  fig.width=10, fig.height=8}
 
 instacart |>
-  count(aisle, sort = TRUE) |>
-  filter(n > 10000) |>
-  mutate(aisle = reorder(aisle, n)) |>
+  count(
+    aisle, sort = TRUE) |>
+  filter(
+    n > 10000) |>
+  mutate(
+    aisle = reorder(aisle, n)) |>
   ggplot(aes(x = n, y = aisle)) +
   geom_col(fill = "steelblue") +
   labs(
@@ -59,4 +65,35 @@ instacart |>
   theme_minimal()
 
 ```
+
+
+**Most popular items in selected aisles**
+
+```{r}
+
+target_aisles <- c("baking ingredients", 
+                   "dog food care", 
+                   "packaged vegetables fruits")
+
+top_items_table <- instacart |> 
+  filter(
+    aisle %in% target_aisles) |> 
+  count(
+    aisle, 
+    product_name, 
+    name = "orders") |> 
+  group_by(aisle) |> 
+  slice_max(orders, n = 3) |> 
+  ungroup()
+
+top_items_table
+
+```
+
+
+
+
+
+
+
 
