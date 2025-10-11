@@ -208,11 +208,29 @@ From 2015 to 2024, average rental prices steadily increased across all boroughs 
 
 **NYC rental prices within ZIP codes**
 
-```{r}
+```{r,  fig.width=10, fig.height=8}
 
 library(ggplot2)
 
-
+combined_df |>
+  group_by(year, 
+           borough) |>
+  summarize(avg_rent = mean(zori, na.rm = TRUE), 
+            .groups = "drop") |>
+  ggplot(aes(x = year, 
+             y = avg_rent, 
+             color = borough)) +
+  geom_line(size = 1.2) +
+  geom_point() +
+  scale_x_continuous(breaks = seq(2015, 2024, 1)) +
+  labs(
+    title = "Average NYC Rental Prices by Borough (2015-2024)",
+    x = "Year",
+    y = "Average Rental Price ($)",
+    color = "Borough"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
 
 
 ```
