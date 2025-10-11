@@ -319,3 +319,81 @@ ggsave("results/combined_plot.png", combined_plot, width = 10, height = 8)
 
 ```
 
+
+## Question 3
+
+**Import and Clean the datasets**
+
+```{r}
+
+accel_df <- read_csv("nhanes_accel.csv", show_col_types = FALSE) |>
+  pivot_longer(
+    cols = starts_with("min"),
+    names_to = "minute",
+    values_to = "mims"
+  ) |>
+  mutate(minute = as.integer(str_remove(minute, "min")))
+
+
+
+sex_levels <- c("male", "female")
+education_levels <- c("Less than high school", "High school equivalent", "More than high school")
+
+covar_df <- read_csv("nhanes_covar.csv", skip = 4, show_col_types = FALSE) |>
+  mutate(
+    sex = case_when(
+      sex == 1 ~ sex_levels[1],
+      sex == 2 ~ sex_levels[2],
+      TRUE ~ NA_character_
+    ),
+    
+    education = case_when(
+      education == 1 ~ education_levels[1],
+      education == 2 ~ education_levels[2],
+      education == 3 ~ education_levels[3],
+      TRUE ~ NA_character_
+    )
+    
+  ) |>
+  filter(age >= 21) |>
+  drop_na() |>
+  
+  mutate(
+    sex = factor(sex, levels = sex_levels),
+    education = factor(education, levels = education_levels, ordered = TRUE)
+  )
+
+
+nhanes_df <- left_join(accel_df, covar_df, 
+                       by = "SEQN")
+
+
+```
+
+
+**Distributions for men and women in each education category**
+
+```{r,  fig.width=10, fig.height=8}
+
+
+
+
+```
+
+
+**Plot**
+
+```{r,  fig.width=10, fig.height=8}
+
+```
+
+
+
+**Three Panel Plot**
+
+```{r,  fig.width=10, fig.height=8}
+
+
+
+```
+
