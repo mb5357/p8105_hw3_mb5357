@@ -395,27 +395,25 @@ The table shows a fairly even gender distribution across education levels. Most 
 
 **Visualization of Age Distributions**
 
-```{{r,  fig.width=10, fig.height=8}}
+```{r,  fig.width=10, fig.height=8, message=FALSE}
 
+library(ggridges)
 
-
-
-```
-
-
-**Plot**
-
-```{r,  fig.width=10, fig.height=8}
-
-```
-
-
-
-**Three Panel Plot**
-
-```{r,  fig.width=10, fig.height=8}
-
-
+ggplot(covar_df, aes(x = age, 
+                     y = education, 
+                     fill = sex)) +
+  
+  geom_density_ridges(alpha = 0.5, 
+                      scale = .85) +
+  labs(
+    title = "Age Distributions by Sex and Education Level",
+    x = "Age",
+    y = "Education Level",
+    fill = "Sex"
+  ) +
+  theme_minimal()
 
 ```
+
+The visualization shows how age distributions vary across education levels for men and women. Higher education groups peak around ages 30–40, while lower education groups include more older adults (65+). Within each education category, male and female age distributions largely overlap, though women tend to be slightly older, especially in the "Less than high school" group.
 
