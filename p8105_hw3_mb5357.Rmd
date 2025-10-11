@@ -8,6 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+library(knitr)
 library(p8105.datasets)
 data("instacart")
 ```
@@ -91,7 +92,7 @@ top_items_table <- instacart |>
   ungroup()
 
 top_items_table |> 
-  knitr::kable()
+  kable()
 
 ```
 
@@ -121,7 +122,7 @@ mean_hour_table <- instacart |>
     )
 
 mean_hour_table |> 
-  knitr::kable()
+  kable()
 
 ```
 
@@ -221,7 +222,7 @@ borough_year_table <- combined_df |>
   )
 
 borough_year_table |> 
-  knitr::kable()
+  kable()
 
 ```
 
@@ -371,9 +372,30 @@ nhanes_df <- left_join(accel_df, covar_df,
 ```
 
 
-**Distributions for men and women in each education category**
+**Number of men and women in each education category**
 
 ```{r,  fig.width=10, fig.height=8}
+
+sex_dist_table <- covar_df |>
+  count(education, sex) |>
+  
+  pivot_wider(
+    names_from = sex,
+    values_from = n,
+    values_fill = 0
+  )
+
+sex_dist_table |> 
+  kable()
+
+```
+
+The table shows a fairly even gender distribution across education levels. Most participants have more than a high school education, with women slightly outnumbering men in that category. Men are more represented in the high school equivalent group, while the lowest education level is nearly balanced. Overall, the sample leans toward higher educational attainment for both sexes.
+
+
+**Visualization of Age Distributions**
+
+```{{r,  fig.width=10, fig.height=8}}
 
 
 
