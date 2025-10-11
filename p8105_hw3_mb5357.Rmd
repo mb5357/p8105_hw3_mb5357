@@ -12,6 +12,8 @@ library(p8105.datasets)
 data("instacart")
 ```
 
+## QUESTION 1
+
 **Description of the Instacart Dataset**
 
 The `instacart` dataset is a line-item level table of grocery orders from Instacart, where each row represents a single product in a single order.
@@ -23,3 +25,17 @@ Key variables include `order_id`, `product_id`, `user_id`, `add_to_cart_order` (
 The dataset can be joined with metadata tables such as `products`, `aisles`, and `departments` using `product_id`. In this version of the dataset, all observations come from the "train" evaluation set. 
 
 For example, user 112108 placed their 4th order on day 4 of the week at 10 AM. This order (order ID 1) contained eight products, including "Bulgarian Yogurt", "Organic Celery Hearts", and "Organic Hass Avocado". Each product appears in a separate row, with variables indicating the order in which the item was added to the cart (e.g., "Bulgarian Yogurt" was first), whether it was reordered (1 = yes, 0 = no), and what aisle and department it belongs to (e.g., "fresh fruits" in the "produce" department).
+
+
+**Number of aisles and most ordered aisles**
+
+```{r}
+
+instacart |> 
+  count(aisle, sort = TRUE) |>
+  mutate(total_aisles = n()) |>
+  relocate(total_aisles, .before = aisle)
+
+```
+
+*There are 134 aisles in total. Fresh vegetables and fresh fruits aisles are the most items ordered from.*

@@ -357,6 +357,8 @@ display: none;
 </div>
 
 
+<div id="question-1" class="section level2">
+<h2>QUESTION 1</h2>
 <p><strong>Description of the Instacart Dataset</strong></p>
 <p>The <code>instacart</code> dataset is a line-item level table of
 grocery orders from Instacart, where each row represents a single
@@ -380,6 +382,28 @@ order in which the item was added to the cart (e.g., “Bulgarian Yogurt”
 was first), whether it was reordered (1 = yes, 0 = no), and what aisle
 and department it belongs to (e.g., “fresh fruits” in the “produce”
 department).</p>
+<p><strong>Number of aisles and most ordered aisles</strong></p>
+<pre class="r"><code>instacart |&gt; 
+  count(aisle, sort = TRUE) |&gt;
+  mutate(total_aisles = n()) |&gt;
+  relocate(total_aisles, .before = aisle)</code></pre>
+<pre><code>## # A tibble: 134 × 3
+##    total_aisles aisle                              n
+##           &lt;int&gt; &lt;chr&gt;                          &lt;int&gt;
+##  1          134 fresh vegetables              150609
+##  2          134 fresh fruits                  150473
+##  3          134 packaged vegetables fruits     78493
+##  4          134 yogurt                         55240
+##  5          134 packaged cheese                41699
+##  6          134 water seltzer sparkling water  36617
+##  7          134 milk                           32644
+##  8          134 chips pretzels                 31269
+##  9          134 soy lactosefree                26240
+## 10          134 bread                          23635
+## # ℹ 124 more rows</code></pre>
+<p><em>There are 134 aisles in total. Fresh vegetables and fresh fruits
+aisles are the most items ordered from.</em></p>
+</div>
 
 
 
