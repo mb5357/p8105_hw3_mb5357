@@ -357,8 +357,7 @@ covar_df <- read_csv("nhanes_covar.csv", skip = 4, show_col_types = FALSE) |>
     
   ) |>
   filter(age >= 21) |>
-  drop_na() |>
-  
+
   mutate(
     sex = factor(sex, levels = sex_levels),
     education = factor(education, levels = education_levels, ordered = TRUE)
@@ -366,7 +365,8 @@ covar_df <- read_csv("nhanes_covar.csv", skip = 4, show_col_types = FALSE) |>
 
 
 nhanes_df <- left_join(accel_df, covar_df, 
-                       by = "SEQN")
+                       by = "SEQN") |>
+             drop_na(sex, age, education)
 
 
 ```
@@ -416,4 +416,27 @@ ggplot(covar_df, aes(x = age,
 ```
 
 The visualization shows how age distributions vary across education levels for men and women. Higher education groups peak around ages 30–40, while lower education groups include more older adults (65+). Within each education category, male and female age distributions largely overlap, though women tend to be slightly older, especially in the "Less than high school" group.
+
+
+**Aggregate total activity per participant**
+
+```{r}
+
+total_activity_df <- nhanes_df |> 
+  group_by(SEQN, sex, age, education) |>
+  
+  summarise(total_mims = sum(mims, na.rm = TRUE), 
+            .groups = "drop")
+
+```
+
+
+
+```{r,  fig.width=10, fig.height=8, message=FALSE}
+
+
+
+
+
+```
 
