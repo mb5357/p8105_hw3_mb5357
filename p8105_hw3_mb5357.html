@@ -594,7 +594,9 @@ combined_df &lt;- left_join(zori_df, zipcodes_df,
                          by = c(&quot;region_name&quot; = &quot;zip_code&quot;))
   
 combined_df &lt;- combined_df |&gt;
-  rename(zip_code = region_name)</code></pre>
+    filter(!is.na(zori)) |&gt;
+    rename(zip_code = region_name,
+         borough = county)</code></pre>
 <p><strong>ZIP Codes Observation</strong></p>
 <pre class="r"><code>zip_counts &lt;- combined_df |&gt;
   group_by(zip_code) |&gt;
@@ -609,13 +611,131 @@ zip_counts |&gt;
 <pre><code>## # A tibble: 1 × 2
 ##   full_coverage very_sparse
 ##           &lt;int&gt;       &lt;int&gt;
-## 1           149           0</code></pre>
-<p>149 ZIP codes appear exactly once in each of the 116 months from Jan
-2015 to Aug 2024, indicating complete data coverage. No ZIP codes appear
-fewer than 10 times. ZIPs with full coverage likely represent stable
-rental markets; others may have missing data due to lower activity or
-reporting gaps.</p>
+## 1            48          26</code></pre>
+<p>A total of 48 ZIP codes have complete data, appearing in all 116
+months from January 2015 to August 2024. Conversely, 26 ZIP codes are
+observed fewer than 10 times during this period. ZIP codes with full
+coverage likely represent stable residential areas with consistent
+rental activity and reliable data reporting. Those with sparse
+observations may reflect areas with limited rental market activity,
+newer ZIP codes, or data gaps.</p>
 <p><strong>Average rental price per borough and year</strong></p>
+<pre class="r"><code>borough_year_table &lt;- combined_df |&gt;
+  group_by(borough,
+           year) |&gt;
+  summarize(avg_rent = mean(zori, na.rm = TRUE), 
+            .groups = &quot;drop&quot;) |&gt;
+  arrange(borough, year) |&gt;
+  pivot_wider(
+    names_from = borough,
+    values_from = avg_rent
+  )
+
+borough_year_table |&gt; 
+  knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">year</th>
+<th align="right">Bronx</th>
+<th align="right">Brooklyn</th>
+<th align="right">Manhattan</th>
+<th align="right">Queens</th>
+<th align="right">Staten Island</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">2015</td>
+<td align="right">1759.595</td>
+<td align="right">2492.928</td>
+<td align="right">3022.042</td>
+<td align="right">2214.707</td>
+<td align="right">NA</td>
+</tr>
+<tr class="even">
+<td align="right">2016</td>
+<td align="right">1520.194</td>
+<td align="right">2520.357</td>
+<td align="right">3038.818</td>
+<td align="right">2271.955</td>
+<td align="right">NA</td>
+</tr>
+<tr class="odd">
+<td align="right">2017</td>
+<td align="right">1543.599</td>
+<td align="right">2545.828</td>
+<td align="right">3133.848</td>
+<td align="right">2263.303</td>
+<td align="right">NA</td>
+</tr>
+<tr class="even">
+<td align="right">2018</td>
+<td align="right">1639.430</td>
+<td align="right">2547.291</td>
+<td align="right">3183.703</td>
+<td align="right">2291.918</td>
+<td align="right">NA</td>
+</tr>
+<tr class="odd">
+<td align="right">2019</td>
+<td align="right">1705.589</td>
+<td align="right">2630.504</td>
+<td align="right">3310.408</td>
+<td align="right">2387.816</td>
+<td align="right">NA</td>
+</tr>
+<tr class="even">
+<td align="right">2020</td>
+<td align="right">1811.443</td>
+<td align="right">2555.051</td>
+<td align="right">3106.517</td>
+<td align="right">2315.632</td>
+<td align="right">1977.608</td>
+</tr>
+<tr class="odd">
+<td align="right">2021</td>
+<td align="right">1857.777</td>
+<td align="right">2549.890</td>
+<td align="right">3136.632</td>
+<td align="right">2210.787</td>
+<td align="right">2045.430</td>
+</tr>
+<tr class="even">
+<td align="right">2022</td>
+<td align="right">2054.267</td>
+<td align="right">2868.199</td>
+<td align="right">3778.375</td>
+<td align="right">2406.038</td>
+<td align="right">2147.436</td>
+</tr>
+<tr class="odd">
+<td align="right">2023</td>
+<td align="right">2285.459</td>
+<td align="right">3015.184</td>
+<td align="right">3932.610</td>
+<td align="right">2561.615</td>
+<td align="right">2332.934</td>
+</tr>
+<tr class="even">
+<td align="right">2024</td>
+<td align="right">2496.896</td>
+<td align="right">3125.657</td>
+<td align="right">4078.440</td>
+<td align="right">2693.584</td>
+<td align="right">2536.442</td>
+</tr>
+</tbody>
+</table>
+<p>From 2015 to 2024, average rental prices steadily increased across
+all boroughs with available data. Manhattan consistently exhibits the
+highest rents, followed by Brooklyn and Queens. The Bronx has the lowest
+average rents but demonstrates notable growth over the period. Data for
+Staten Island begins in 2020, showing a similar upward trend. Overall,
+the table reflects a citywide rise in rental prices, with Manhattan and
+Brooklyn leading both in cost and growth.</p>
+<p><strong>NYC rental prices within ZIP codes</strong></p>
+<pre class="r"><code>library(ggplot2)</code></pre>
 </div>
 
 

@@ -156,7 +156,9 @@ combined_df <- left_join(zori_df, zipcodes_df,
                          by = c("region_name" = "zip_code"))
   
 combined_df <- combined_df |>
-  rename(zip_code = region_name)
+    filter(!is.na(zori)) |>
+    rename(zip_code = region_name,
+         borough = county)
 
 ```
 
@@ -178,14 +180,39 @@ zip_counts |>
 
 ```
 
-149 ZIP codes appear exactly once in each of the 116 months from Jan 2015 to Aug 2024, indicating complete data coverage.
-No ZIP codes appear fewer than 10 times.
-ZIPs with full coverage likely represent stable rental markets; others may have missing data due to lower activity or reporting gaps.
+A total of 48 ZIP codes have complete data, appearing in all 116 months from January 2015 to August 2024. Conversely, 26 ZIP codes are observed fewer than 10 times during this period. ZIP codes with full coverage likely represent stable residential areas with consistent rental activity and reliable data reporting. Those with sparse observations may reflect areas with limited rental market activity, newer ZIP codes, or data gaps.
 
 
 **Average rental price per borough and year**
 
 ```{r}
+
+borough_year_table <- combined_df |>
+  group_by(borough,
+           year) |>
+  summarize(avg_rent = mean(zori, na.rm = TRUE), 
+            .groups = "drop") |>
+  arrange(borough, year) |>
+  pivot_wider(
+    names_from = borough,
+    values_from = avg_rent
+  )
+
+borough_year_table |> 
+  knitr::kable()
+
+```
+
+From 2015 to 2024, average rental prices steadily increased across all boroughs with available data. Manhattan consistently exhibits the highest rents, followed by Brooklyn and Queens. The Bronx has the lowest average rents but demonstrates notable growth over the period. Data for Staten Island begins in 2020, showing a similar upward trend. Overall, the table reflects a citywide rise in rental prices, with Manhattan and Brooklyn leading both in cost and growth.
+
+
+**NYC rental prices within ZIP codes**
+
+```{r}
+
+library(ggplot2)
+
+
 
 
 ```
