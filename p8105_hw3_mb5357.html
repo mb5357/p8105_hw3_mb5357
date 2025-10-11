@@ -556,6 +556,54 @@ mean_hour_table |&gt;
 </tbody>
 </table>
 </div>
+<div id="question-2" class="section level2">
+<h2>Question 2</h2>
+<p><strong>Import and Clean the datasets</strong></p>
+<pre class="r"><code>zipcodes_df &lt;- read_csv(&quot;Zip Codes.csv&quot;, show_col_types = FALSE) |&gt;
+  janitor::clean_names() |&gt;
+  mutate(
+    zip_code = str_pad(as.character(zip_code), 
+                       width = 5, 
+                       side = &quot;left&quot;, 
+                       pad = &quot;0&quot;),
+    county = case_when(
+      county == &quot;New York&quot; ~ &quot;Manhattan&quot;,
+      county == &quot;Kings&quot;    ~ &quot;Brooklyn&quot;,
+      county == &quot;Richmond&quot; ~ &quot;Staten Island&quot;,
+      TRUE ~ county
+    )
+  ) |&gt;
+  distinct(zip_code, .keep_all = TRUE)
+
+
+zori_df &lt;- read_csv(&quot;Zip_zori_uc_sfrcondomfr_sm_month_NYC.csv&quot;, 
+                    show_col_types = FALSE) |&gt;
+  janitor::clean_names()|&gt;
+  pivot_longer(
+    cols = starts_with(&quot;x20&quot;), 
+    names_to = &quot;date&quot;, 
+    values_to = &quot;zori&quot;
+  ) |&gt;
+  rename(zip_code = region_id, 
+         region_name = region_name, 
+         county = county_name) |&gt;
+  mutate(
+    zip_code = str_pad(as.character(zip_code), 
+                       width = 5, 
+                       side = &quot;left&quot;, 
+                       pad = &quot;0&quot;),
+    date = ymd(str_remove(date, &quot;x&quot;)),
+    zori = as.numeric(gsub(&quot;,&quot;, &quot;&quot;, zori)),   
+    year = year(date),
+    month = month(date)
+  ) |&gt;
+  select(zip_code, region_name, county, date, year, month, zori)
+
+
+combined_df &lt;- left_join(zori_df, zipcodes_df, by = &quot;zip_code&quot;) %&gt;%
+  mutate(county = coalesce(county.x, county.y)) %&gt;%
+  select(zip_code, county, region_name, date, zori)</code></pre>
+</div>
 
 
 
