@@ -39,3 +39,24 @@ instacart |>
 ```
 
 *There are 134 aisles in total. Fresh vegetables and fresh fruits aisles are the most items ordered from.*
+
+
+**Plot of items ordered per aisle**
+
+```{r,  fig.width=10, fig.height=8}
+
+instacart |>
+  count(aisle, sort = TRUE) |>
+  filter(n > 10000) |>
+  mutate(aisle = reorder(aisle, n)) |>
+  ggplot(aes(x = n, y = aisle)) +
+  geom_col(fill = "steelblue") +
+  labs(
+    title = "Number of Items Ordered by Aisle",
+    x = "Number of Items Ordered",
+    y = "Aisle"
+  ) +
+  theme_minimal()
+
+```
+
