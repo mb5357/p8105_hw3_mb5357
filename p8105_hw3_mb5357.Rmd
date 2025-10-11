@@ -256,7 +256,7 @@ plot_1 <- ggplot(borough_year_avg,
     y = "Average Rental Price ($)",
     color = "Borough"
   ) +
-  theme_minimal() +
+  theme_bw() +
   theme(legend.position = "bottom")
 
 
@@ -296,7 +296,7 @@ plot_2 <- ggplot(avg_rent_2023,
     y = "Average Rental Price ($)",
     fill = "Borough"
   ) +
-  theme_minimal() +
+  theme_bw() +
   theme(legend.position = "none")
 
 
@@ -411,7 +411,7 @@ ggplot(covar_df, aes(x = age,
     y = "Education Level",
     fill = "Sex"
   ) +
-  theme_minimal()
+  theme_bw()
 
 ```
 
@@ -431,12 +431,29 @@ total_activity_df <- nhanes_df |>
 ```
 
 
+**Plot total activity vs age by sex and education**
 
 ```{r,  fig.width=10, fig.height=8, message=FALSE}
 
-
-
-
+ggplot(total_activity_df, 
+       aes(x = age, 
+           y = total_mims, 
+           color = sex)) +
+  geom_point(alpha = 0.6) +
+  geom_smooth(se = FALSE) +
+  
+  facet_grid(~ education) +
+  viridis::scale_color_viridis(discrete = TRUE) +
+  
+  labs(
+    title = "Daily Total Activity by Age, Sex, and Education Level",
+    x = "Age",
+    y = "Total MIMS (Daily Activity)",
+    color = "Sex"
+  ) +
+  theme_bw()
 
 ```
+
+The plot shows daily total physical activity by age, sex, and education level. Activity generally declines with age across all groups, but patterns differ by education. In "Less than high school," activity drops sharply, with women slightly more active than men. For "High school equivalent" and "More than high school," women consistently maintain higher activity than men, and declines with age are more gradual, especially in the highest education group. Overall, females tend to stay more active, and higher education displays a pattern of a slower decline in activity with age.
 
