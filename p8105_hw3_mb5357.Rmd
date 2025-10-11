@@ -67,17 +67,14 @@ instacart |>
 ```
 
 
-**Most popular items in selected aisles**
+**Top 3 items in selected aisles**
 
 ```{r}
 
-target_aisles <- c("baking ingredients", 
-                   "dog food care", 
-                   "packaged vegetables fruits")
-
-top_items_table <- instacart |> 
-  filter(
-    aisle %in% target_aisles) |> 
+top_items_table <- instacart |>
+  filter(aisle == "baking ingredients" | 
+         aisle == "dog food care" | 
+         aisle == "packaged vegetables fruits") |>
   count(
     aisle, 
     product_name, 
@@ -86,7 +83,34 @@ top_items_table <- instacart |>
   slice_max(orders, n = 3) |> 
   ungroup()
 
-top_items_table
+top_items_table |> 
+  knitr::kable()
+
+```
+
+
+**Mean order hour for "Pink Lady Apples" and "Coffee Ice Cream" by day of week**
+
+```{r}
+
+day_names <- c("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+
+mean_hour_table <- instacart |>
+  filter(product_name == "Pink Lady Apples" | 
+         product_name == "Coffee Ice Cream") |>
+    mutate(day_name = factor(day_names[order_dow + 1], 
+                             levels = day_names)) |>
+    group_by(product_name, 
+           day_name) |>
+    summarize(mean_order_hour = round(mean(order_hour_of_day), 1), 
+              .groups = "drop") |>
+    pivot_wider(
+    names_from = day_name,
+    values_from = mean_order_hour
+    )
+
+mean_hour_table |> 
+  knitr::kable()
 
 ```
 
