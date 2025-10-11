@@ -166,19 +166,21 @@ combined_df <- combined_df |>
 ```{r}
 
 zip_counts <- combined_df |>
-  count(zip_code, name = "n_obs")
+  group_by(zip_code) |>
+  summarize(n_months = n()) |>
+  ungroup()
 
 zip_counts |>
   summarize(
-    full_coverage = sum(n_obs == 116),
-    very_sparse = sum(n_obs < 10)
+    full_coverage = sum(n_months == 116),
+    very_sparse = sum(n_months < 10)
   )
 
 ```
 
-Out of all ZIP codes, 149 are observed in all 116 months between Jan 2015 and Aug 2024.
-Zero ZIP codes have fewer than 10 observations.
-ZIPs with full coverage likely represent stable residential areas. Others may be missing data due to low activity, data gaps, or newer ZIP codes.
+149 ZIP codes appear exactly once in each of the 116 months from Jan 2015 to Aug 2024, indicating complete data coverage.
+No ZIP codes appear fewer than 10 times.
+ZIPs with full coverage likely represent stable rental markets; others may have missing data due to lower activity or reporting gaps.
 
 
 **Average rental price per borough and year**
