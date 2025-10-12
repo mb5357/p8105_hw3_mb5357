@@ -411,7 +411,9 @@ ggplot(covar_df, aes(x = age,
     y = "Education Level",
     fill = "Sex"
   ) +
-  theme_bw()
+  theme_minimal() +
+    theme(legend.position = "bottom")
+
 
 ```
 
@@ -451,9 +453,52 @@ ggplot(total_activity_df,
     y = "Total MIMS (Daily Activity)",
     color = "Sex"
   ) +
-  theme_bw()
+  theme_bw() +
+    theme(legend.position = "bottom")
 
 ```
 
 The plot shows daily total physical activity by age, sex, and education level. Activity generally declines with age across all groups, but patterns differ by education. In "Less than high school," activity drops sharply, with women slightly more active than men. For "High school equivalent" and "More than high school," women consistently maintain higher activity than men, and declines with age are more gradual, especially in the highest education group. Overall, females tend to stay more active, and higher education displays a pattern of a slower decline in activity with age.
 
+
+**Three-panel Plot**
+
+```{r,  fig.width=10, fig.height=8, message=FALSE}
+
+
+nhanes_df <- nhanes_df |>
+  mutate(hour = minute / 60)
+
+
+ggplot(nhanes_df, aes(x = hour, 
+                      y = mims, 
+                      color = sex, 
+                      group = sex)) +
+
+ stat_summary(
+    fun = mean,
+    geom = "line",
+    linewidth = 1,
+  ) +
+
+  geom_smooth(
+    se = FALSE) +
+
+  facet_grid(~ education) +
+  viridis::scale_color_viridis(discrete = TRUE) +
+   
+  scale_x_continuous(
+   breaks = seq(0, 24, by = 4)) +
+  
+   labs(
+    title = "24-hour Activity Profiles by Education Level and Sex",
+    x = "Hour of Day",
+    y = "Mean MIMS (Activity Level)",
+    color = "Sex"
+  ) +
+  theme_bw() + 
+  theme(legend.position = "bottom")
+
+```
+
+The plot shows mean physical activity (MIMS) over 24 hours, separated by sex and education level. In all groups, activity increases in the morning, peaks mid-day, and declines at night, reflecting typical daily routines. Women consistently show higher activity than men, especially among those with more than a high school education. This group also maintains higher afternoon activity levels. While men follow a similar pattern, their activity levels are lower overall. These trends highlight consistent differences by sex and education, particularly in daytime activity.
