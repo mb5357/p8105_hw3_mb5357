@@ -32,15 +32,15 @@ For example, user 112108 placed their 4th order on day 4 of the week at 10 AM. T
 
 ```{r}
 
-instacart |> 
-  count(
-    aisle, sort = TRUE) |>
-  
-  mutate(
-    total_aisles = n()) |>
-  
-  relocate(
-    total_aisles, .before = aisle)
+aisle_counts <- instacart |>
+  count(aisle, 
+        name = "orders", sort = TRUE)
+
+total_aisles <- nrow(aisle_counts) 
+
+aisle_counts |>
+  mutate(total_aisles = total_aisles) |>
+  relocate(total_aisles, .before = aisle)
 
 ```
 
@@ -187,9 +187,9 @@ combined_df <- combined_df |>
 
 ```{r}
 
-zip_counts <- combined_df |>
-  group_by(zip_code) |>
-  summarize(n_months = n()) |>
+zip_counts <- combined_df |> 
+  group_by(zip_code) |> 
+  summarize(n_months = n()) |> 
   ungroup()
 
 zip_counts |>
@@ -268,10 +268,11 @@ plot_1
 From 2015 to 2024, average rental prices rose in all NYC boroughs, with a dip or slowdown around 2020–2021 likely reflecting pandemic effects. Rents began rising sharply again in 2022. Manhattan consistently had the highest average rents, while the Bronx saw the largest relative increase. By 2024, the gap between boroughs had narrowed somewhat, suggesting prices are rising more quickly in outer boroughs. Staten Island data is available only from 2020 onward.
 
 
+**ZIP-Code level Rent**
 
 ```{r,  fig.width=10, fig.height=8}
 
-avg_rent_2023 <- combined_df |>
+zip_month_2023 <- combined_df |>
   filter(year == 2023) |>
   group_by(borough, 
            zip_code, 
@@ -279,9 +280,17 @@ avg_rent_2023 <- combined_df |>
   summarize(avg_rent = mean(zori, na.rm = TRUE), 
             .groups = "drop")
 
-plot_2 <- ggplot(avg_rent_2023, 
+
+zip_avg_2023 <- zip_month_2023 |>
+  group_by(borough, 
+           zip_code) |>
+  summarize(avg_rent_2023 = mean(avg_rent, na.rm = TRUE), 
+            .groups = "drop")
+
+
+plot_2 <- ggplot(zip_avg_2023, 
           aes(x = borough, 
-              y = avg_rent, 
+              y = avg_rent_2023, 
               fill = borough)) +
   
   geom_boxplot(alpha = 0.7) +   
@@ -291,9 +300,9 @@ plot_2 <- ggplot(avg_rent_2023,
   
   scale_y_continuous() +
   labs(
-    title = "Distribution of Average Monthly Rental Prices by Borough in 2023",
+    title = "Distribution of Zip-Code-Level Rental Prices by Borough in 2023",
     x = "Borough",
-    y = "Average Rental Price ($)",
+    y = "Average Price ($)",
     fill = "Borough"
   ) +
   theme_bw() +
@@ -305,7 +314,7 @@ plot_2
 
 ```
 
-ZIP code level averages for 2023 reveal clear differences across boroughs. Manhattan shows the highest median rents and the widest spread, with several high-rent ZIP codes driving the upper tail. Brooklyn follows, also with a long upper tail and considerable variability. Queens, Staten Island, and the Bronx have lower medians and tighter interquartile ranges, indicating more uniform and generally more affordable rents. Staten Island’s ZIP code level rents are relatively low and tightly clustered, reflecting a more uniform, mid-priced market. Fewer high-end outliers suggest less luxury stock and greater affordability compared to Manhattan and Brooklyn.
+
 
 
 **Combined Plots**
