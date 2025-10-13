@@ -314,7 +314,7 @@ plot_2
 
 ```
 
-
+The boxplot reveals clear differences in ZIP-level average rents across boroughs in 2023. Manhattan has the highest median rent and the widest range, with a long upper tail reflecting some very high-rent ZIPs. Brooklyn follows with relatively high median rents and substantial variability. Queens, the Bronx, and Staten Island have lower and more similar median rents, with Staten Island showing the tightest range. Some outliers with very high rents are visible, likely due to a small number of luxury listings or data irregularities.
 
 
 **Combined Plots**
