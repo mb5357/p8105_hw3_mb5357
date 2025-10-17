@@ -2,13 +2,14 @@
 title: "p8105_hw3_mb5357"
 author: "Maria Beg"
 date: "2025-10-07"
-output: html_document
+output: github_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(knitr)
+library(lubridate)
 library(p8105.datasets)
 data("instacart")
 ```
@@ -133,52 +134,59 @@ mean_hour_table |>
 
 ```{r}
 
+
 zipcodes_df <- read_csv("Zip Codes.csv", show_col_types = FALSE) |>
   janitor::clean_names() |>
-   
   mutate(
-     county = case_when(
+    zip_code = str_pad(as.character(zip_code), 
+                       width = 5, 
+                       side = "left", 
+                       pad = "0"),
+    county = case_when(
       county == "New York" ~ "Manhattan",
       county == "Kings"    ~ "Brooklyn",
       county == "Richmond" ~ "Staten Island",
       TRUE ~ county
     )
   ) |>
- 
-   distinct(zip_code, .keep_all = TRUE) |>
-  select(county, zip_code)
+  distinct(zip_code, .keep_all = TRUE)
 
 
 zori_df <- read_csv("Zip_zori_uc_sfrcondomfr_sm_month_NYC.csv", 
                     show_col_types = FALSE) |>
   janitor::clean_names()|>
-  
   pivot_longer(
     cols = starts_with("x20"), 
     names_to = "date", 
     values_to = "zori"
   ) |>
- 
-   mutate(
-    date = lubridate::ymd(str_remove(date, "x")),
+  rename(zip_code = region_id, 
+         region_name = region_name, 
+         county = county_name) |>
+  mutate(
+    zip_code = str_pad(as.character(zip_code), 
+                       width = 5, 
+                       side = "left", 
+                       pad = "0"),
+    date = ymd(str_remove(date, "x")),
+    zori = as.numeric(gsub(",", "", zori)),   
     year = year(date),
-    month = month(date)
+    month = month(date),
+    county = case_when(
+    county == "New York County" ~ "Manhattan",
+    county == "Kings County" ~ "Brooklyn",
+    county == "Richmond County" ~ "Staten Island",
+    county == "Queens County" ~ "Queens",
+    county == "Bronx County" ~ "Bronx",
+    TRUE ~ county)
   ) |>
-  
-  select(region_name, year, month, zori)
+  select(zip_code, region_name, county, date, year, month, zori)
 
 
-
-combined_df <- left_join(zori_df, zipcodes_df, 
-                         by = c("region_name" = "zip_code"))
-  
-combined_df <- combined_df |>
-    filter(!is.na(zori)) |>
-    
-  rename(zip_code = region_name,
-         borough = county) |> 
- 
-   mutate(month = month.name[month])
+combined_df <- left_join(zori_df, zipcodes_df, by = "zip_code") |>
+  mutate(county = coalesce(county.x, county.y)) |>
+  select(zip_code, county, region_name, date, zori) |>
+  rename(borough = county)
 
 ```
 
@@ -200,7 +208,7 @@ zip_counts |>
 
 ```
 
-A total of 48 ZIP codes have complete data, appearing in all 116 months from January 2015 to August 2024. Conversely, 26 ZIP codes are observed fewer than 10 times during this period. ZIP codes with full coverage likely represent stable residential areas with consistent rental activity and reliable data reporting. Those with sparse observations may reflect areas with limited rental market activity, newer ZIP codes, or data gaps.
+A total of 149 ZIP codes have complete data, appearing in all 116 months from January 2015 to August 2024. Conversely, 0 ZIP codes are observed fewer than 10 times during this period. ZIP codes with full coverage likely represent stable residential areas with consistent rental activity and reliable data reporting. Those with sparse observations may reflect areas with limited rental market activity, newer ZIP codes, or data gaps.
 
 
 **Average rental price per borough and year**
@@ -208,13 +216,13 @@ A total of 48 ZIP codes have complete data, appearing in all 116 months from Jan
 ```{r}
 
 borough_year_table <- combined_df |>
-  group_by(borough,
-           year) |>
+  select(date, borough, zori) |> 
+  mutate(year = year(date)) |> 
+  group_by(borough, year) |> 
+  
+   summarize(avg_rent = mean(zori, na.rm = TRUE)) |>
  
-   summarize(avg_rent = mean(zori, na.rm = TRUE), 
-            .groups = "drop") |>
- 
-   arrange(borough, year) |>
+   arrange(borough, year, avg_rent) |>
  
    pivot_wider(
     names_from = borough,
@@ -235,30 +243,35 @@ From 2015 to 2024, average rental prices steadily increased across all boroughs 
 
 library(ggplot2)
 
-borough_year_avg <- combined_df |>
-  group_by(year, 
-           borough) |>
-  summarize(avg_rent = mean(zori, na.rm = TRUE), 
-            .groups = "drop")
-
-    
-plot_1 <- ggplot(borough_year_avg,
-                 aes(x = year, 
-                     y = avg_rent, 
-                     color = borough)) +
+plot_1 <- combined_df |>
+  filter(!is.na(zori)) |>
+  mutate(year = year(date)) |>
   
-  geom_line(linewidth = 1.2) +
-  geom_point() +
-  scale_x_continuous(breaks = seq(2015, 2024, 1)) +
+  ggplot(aes(x = year, 
+             y = zori, 
+             group = zip_code, 
+             color = borough)) +
+  
+  geom_line(alpha = 0.5) +                      
+  stat_summary(aes(group = borough),              
+               fun = median, 
+               geom = "line", 
+               color = "black", 
+               size = 1) +
+  
+  facet_wrap(~ borough, scales = "free_y") +     
+  
+  scale_x_continuous(
+    breaks=seq(2015, 2024, by = 2)) +
+    
   labs(
-    title = "Average NYC Rental Prices by Borough (2015-2024)",
+    title = "NYC Rental Prices by ZIP Code Across Boroughs",
     x = "Year",
-    y = "Average Rental Price ($)",
+    y = "Rental Price (ZORI)",
     color = "Borough"
   ) +
-  theme_bw() +
-  theme(legend.position = "bottom")
-
+  theme_minimal() +
+    theme(legend.position = "none")
 
 plot_1
 
@@ -272,34 +285,26 @@ From 2015 to 2024, average rental prices rose in all NYC boroughs, with a dip or
 
 ```{r,  fig.width=10, fig.height=8}
 
-zip_month_2023 <- combined_df |>
-  filter(year == 2023) |>
+plot_2 <- combined_df |>
+    filter(!is.na(zori),
+           year(date) == 2023) |>
+  
   group_by(borough, 
            zip_code, 
-           month) |>
+           date) |>
+  
   summarize(avg_rent = mean(zori, na.rm = TRUE), 
-            .groups = "drop")
+            .groups = "drop") |>
 
-
-zip_avg_2023 <- zip_month_2023 |>
-  group_by(borough, 
-           zip_code) |>
-  summarize(avg_rent_2023 = mean(avg_rent, na.rm = TRUE), 
-            .groups = "drop")
-
-
-plot_2 <- ggplot(zip_avg_2023, 
-          aes(x = borough, 
-              y = avg_rent_2023, 
+        ggplot(aes(x = borough, 
+              y = avg_rent, 
               fill = borough)) +
   
   geom_boxplot(alpha = 0.7) +   
   geom_jitter(width = 0.2, 
               alpha = 0.3, 
               size = 1) + 
-  
-  scale_y_continuous() +
-  labs(
+    labs(
     title = "Distribution of Zip-Code-Level Rental Prices by Borough in 2023",
     x = "Borough",
     y = "Average Price ($)",
@@ -314,7 +319,7 @@ plot_2
 
 ```
 
-The boxplot reveals clear differences in ZIP-level average rents across boroughs in 2023. Manhattan has the highest median rent and the widest range, with a long upper tail reflecting some very high-rent ZIPs. Brooklyn follows with relatively high median rents and substantial variability. Queens, the Bronx, and Staten Island have lower and more similar median rents, with Staten Island showing the tightest range. Some outliers with very high rents are visible, likely due to a small number of luxury listings or data irregularities.
+The boxplot shows clear differences in ZIP-level average rents across boroughs in 2023. Manhattan has the highest median ZIP rent and the greatest dispersion, with a wide interquartile range (IQR) and a long upper tail driven by several very high-rent ZIP codes. Brooklyn follows, with a relatively high median and substantial variability. Queens, the Bronx, and Staten Island have lower and more similar medians, with Staten Island showing the narrowest IQR, indicating more uniform ZIP-level rents. A few outliers with extremely high rents are visible, likely due to luxury listings or data anomalies.
 
 
 **Combined Plots**
