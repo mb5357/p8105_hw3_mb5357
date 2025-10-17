@@ -271,7 +271,7 @@ plot_1 <- combined_df |>
     color = "Borough"
   ) +
   theme_minimal() +
-    theme(legend.position = "none")
+  theme(legend.position = "bottom")
 
 plot_1
 
